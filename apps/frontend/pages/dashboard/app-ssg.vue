@@ -3,14 +3,21 @@
     <h1>ファイルタイプ判定 (SSG版)</h1>
     <p class="description">静的生成されたページでファイルのタイプを判定します。</p>
     
-    <div class="upload-section">
-      <input 
-        type="file" 
-        @change="handleFileChange" 
-        ref="fileInput"
-        class="file-input"
-      />
-    </div>
+    <form @submit.prevent="handleSubmit" class="upload-form">
+      <div class="upload-section">
+        <input 
+          type="file" 
+          @change="handleFileChange" 
+          ref="fileInput"
+          class="file-input"
+          required
+        />
+      </div>
+      
+      <button type="submit" :disabled="!selectedFile || loading" class="submit-button">
+        {{ loading ? '分析中...' : 'ファイルを分析' }}
+      </button>
+    </form>
     
     <div v-if="loading" class="loading">
       ファイルを分析中...
@@ -24,6 +31,15 @@
         </div>
         <div class="result-item">
           <strong>ファイルタイプ:</strong> {{ result.fileType }}
+        </div>
+        <div class="result-item">
+          <strong>グループ:</strong> {{ result.group }}
+        </div>
+        <div class="result-item">
+          <strong>MIME Type:</strong> {{ result.mimeType }}
+        </div>
+        <div class="result-item">
+          <strong>拡張子:</strong> {{ result.extension }}
         </div>
         <div class="result-item">
           <strong>テキストファイル:</strong> {{ result.isText ? 'はい' : 'いいえ' }}
@@ -62,6 +78,7 @@ const apiBase = runtimeConfig.public.apiBase
 const fileInput = ref<HTMLInputElement>()
 const selectedFile = ref<File | null>(null)
 const loading = ref(false)
+
 const result = ref<{
   fileName: string
   fileType: string
@@ -69,6 +86,9 @@ const result = ref<{
   score: number
   scorePercent: string
   description: string
+  group: string
+  mimeType: string
+  extension: string
 } | null>(null)
 const error = ref<string | null>(null)
 
@@ -77,14 +97,9 @@ const handleFileChange = (event: Event) => {
   selectedFile.value = target.files?.[0] || null
   result.value = null
   error.value = null
-  
-  // SSGでもファイル選択後に自動で分析
-  if (selectedFile.value) {
-    handleAnalyze()
-  }
 }
 
-const handleAnalyze = async () => {
+const handleSubmit = async () => {
   if (!selectedFile.value) return
   
   loading.value = true
@@ -131,8 +146,12 @@ h1 {
   margin-bottom: 2rem;
 }
 
-.upload-section {
+.upload-form {
   margin-bottom: 2rem;
+}
+
+.upload-section {
+  margin-bottom: 1rem;
 }
 
 .file-input {
@@ -145,6 +164,26 @@ h1 {
 
 .file-input:hover {
   border-color: #35a372;
+}
+
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #35a372;
+}
+
+.submit-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .loading {

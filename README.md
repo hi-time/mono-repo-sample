@@ -100,9 +100,26 @@ pnpm dev
       "isText": false,
       "score": 0.99,
       "scorePercent": "99%",
-      "description": "Detected as pdf file"
+      "description": "Detected as pdf file",
+      "group": "document",
+      "mimeType": "application/pdf",
+      "extension": "pdf"
     }
     ```
+
+#### レスポンスプロパティ
+
+| プロパティ | 型 | 説明 |
+|----------|-----|------|
+| `fileName` | string | アップロードされたファイル名 |
+| `fileType` | string | 検出されたファイルタイプ（例: pdf, png, javascript） |
+| `isText` | boolean | テキストファイルかどうか |
+| `score` | number | 信頼度スコア（0-1の範囲） |
+| `scorePercent` | string | 信頼度スコアのパーセンテージ表示 |
+| `description` | string | ファイルタイプの説明文 |
+| `group` | string | ファイルグループ（例: document, code, image） |
+| `mimeType` | string | MIMEタイプ（例: application/pdf, image/png） |
+| `extension` | string | 推奨される拡張子 |
 
 #### File Type Detection - Hono版 (OpenAPI)
 - `POST /api/file-type/detect-file-type` - ファイルタイプ判定（Hono + OpenAPI実装）
@@ -251,6 +268,42 @@ pnpm add <package> --filter backend
 4. `apps/backend/src/index.ts` でルートを登録
 
 **ポイント**: FastifyとHonoの両方が同じServiceクラスを呼び出すため、ビジネスロジックは一箇所に集約されます。
+
+### デバッグ設定
+
+VS Codeでのデバッグ設定は `.vscode/launch.json` に記載されています。
+
+#### 利用可能なデバッグ設定
+
+1. **Backend: Debug**
+   - バックエンドをデバッグモードで起動
+   - pnpm経由でbackendフィルターを使用して実行
+
+2. **Backend: Attach**
+   - 既に起動しているバックエンドプロセスにアタッチ
+   - ポート9229で接続
+
+3. **Frontend: Debug**
+   - フロントエンドをChromeブラウザでデバッグ
+   - `http://localhost:3000` に接続
+
+4. **Backend: Debug (tsx watch)**
+   - tsx watchモードでバックエンドをデバッグ
+   - ファイル変更時に自動再起動
+
+5. **All: Debug (Compound)**
+   - Turborepoの全アプリを同時起動
+
+6. **Full Stack Debug (Compound)**
+   - バックエンドとフロントエンドを同時にデバッグ
+   - フルスタック開発に最適
+
+#### デバッグの開始方法
+
+1. VS Codeのデバッグパネルを開く（`Ctrl+Shift+D` / `Cmd+Shift+D`）
+2. ドロップダウンから使用する設定を選択
+3. F5キーまたは再生ボタンをクリック
+4. ブレークポイントを設定してコードをステップ実行
 
 ## 📄 ライセンス
 

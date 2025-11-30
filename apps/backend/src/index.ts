@@ -5,20 +5,12 @@ import { swaggerUI } from '@hono/swagger-ui'
 import { healthRoutes } from './api/fastify/health'
 import { fileTypeRoutes } from './api/fastify/file-type'
 import { fileTypeRoute } from './api/hono/file-type'
+import { initializeApplication } from './core/initializer'
 
 // Fastify server
 const server = Fastify({
   logger: true,
 })
-
-// Register CORS
-await server.register(cors, {
-  origin: true,
-})
-
-// Register Fastify routes
-await server.register(healthRoutes)
-await server.register(fileTypeRoutes, { prefix: '/api' })
 
 // Hono + OpenAPI routes
 const honoApp = new OpenAPIHono()
@@ -114,8 +106,22 @@ server.get('/', async (request, reply) => {
 // Start server
 const start = async () => {
   try {
+    // アプリケーション全体の初期化
+    await initializeApplication()
+
+    // Register CORS
+    await server.register(cors, {
+      origin: true,
+    })
+
+    // Register Fastify routes
+    await server.register(healthRoutes)
+    await server.register(fileTypeRoutes, { prefix: '/api' })
+
     await server.listen({ port: 3002, host: '0.0.0.0' })
-    console.log('🚀 API server (Fastify) running at http://localhost:3002')
+    console.log('🚀 API server (Fastify + Hono) running at http://localhost:3002')
+    console.log('📚 API docs (Swagger): http://localhost:3002/docs')
+    console.log('📄 OpenAPI spec: http://localhost:3002/openapi.json')
     console.log('📊 Health check: http://localhost:3002/health')
   } catch (err) {
     server.log.error(err)
@@ -124,3 +130,4 @@ const start = async () => {
 }
 
 start()
+

@@ -4,7 +4,6 @@
  */
 
 import type { FastifyPluginAsync } from 'fastify'
-// @ts-expect-error - @fastify/multipart v8 doesn't include type definitions
 import multipart from '@fastify/multipart'
 import { FileTypeDetectionService } from '../../application/services/FileTypeDetectionService'
 import { DetectFileTypeParameter } from '../../domain/file-type'
@@ -40,6 +39,8 @@ export const fileTypeRoutes: FastifyPluginAsync = async (server) => {
 
       // アプリケーションサービスを呼び出し
       const result = await fileTypeDetectionService.detectFileType(parameter)
+
+      console.log('File type detection result:', result)
 
       return reply.send(result)
     } catch (error) {

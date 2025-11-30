@@ -11,11 +11,22 @@ let magikaInstance: Magika | null = null
 
 export class FileTypeDetectionService {
   /**
-   * Magikaインスタンスを取得（遅延初期化）
+   * Magikaインスタンスを初期化（サーバー起動時に呼び出す）
    */
-  private async getMagikaInstance(): Promise<Magika> {
+  static async initialize(): Promise<void> {
     if (!magikaInstance) {
+      console.log('🔧 Initializing Magika...')
       magikaInstance = await Magika.create()
+      console.log('✅ Magika initialized successfully')
+    }
+  }
+
+  /**
+   * Magikaインスタンスを取得
+   */
+  private getMagikaInstance(): Magika {
+    if (!magikaInstance) {
+      throw new Error('Magika has not been initialized. Call FileTypeDetectionService.initialize() first.')
     }
     return magikaInstance
   }
@@ -24,12 +35,15 @@ export class FileTypeDetectionService {
    * ファイルのタイプを判定する
    */
   async detectFileType(parameter: DetectFileTypeParameter): Promise<FileTypeResult> {
-    const magika = await this.getMagikaInstance()
-    const prediction = (await magika.identifyBytes(parameter.fileData)) as any
-
-    const outputLabel = prediction.output?.label || 'unknown'
-    const isText = prediction.output?.is_text || false
-    const score = prediction.score || 0
+    const magika = this.getMagikaInstance()
+    const result = (await magika.identifyBytes(parameter.fileData)) as any
+    
+    const outputLabel = result.prediction?.output?.label || 'unknown'
+    const isText = result.prediction?.output?.is_text || false
+    const score = result.prediction?.score || 0
+    const group = result.prediction?.output?.group || 'unknown'
+    const mimeType = result.prediction?.output?.mime_type || 'application/octet-stream'
+    const extension = result.prediction?.output?.extension || ''
 
     return new FileTypeResult(
       parameter.fileName,
@@ -37,7 +51,10 @@ export class FileTypeDetectionService {
       isText,
       score,
       `${(score * 100).toFixed(2)}%`,
-      `Detected as ${outputLabel} file`
+      `Detected as ${outputLabel} file`,
+      group,
+      mimeType,
+      extension
     )
   }
 }

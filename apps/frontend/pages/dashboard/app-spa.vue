@@ -33,6 +33,15 @@
           <strong>ファイルタイプ:</strong> {{ result.fileType }}
         </div>
         <div class="result-item">
+          <strong>グループ:</strong> {{ result.group }}
+        </div>
+        <div class="result-item">
+          <strong>MIME Type:</strong> {{ result.mimeType }}
+        </div>
+        <div class="result-item">
+          <strong>拡張子:</strong> {{ result.extension }}
+        </div>
+        <div class="result-item">
           <strong>テキストファイル:</strong> {{ result.isText ? 'はい' : 'いいえ' }}
         </div>
         <div class="result-item">
@@ -73,6 +82,9 @@ const result = ref<{
   score: number
   scorePercent: string
   description: string
+  group: string
+  mimeType: string
+  extension: string
 } | null>(null)
 const error = ref<string | null>(null)
 
