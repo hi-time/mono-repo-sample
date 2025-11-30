@@ -26,7 +26,7 @@
         <div class="links">
           <NuxtLink to="/dashboard" class="link-card">
             <h3>📊 ダッシュボード</h3>
-            <p>ファイルMIMEタイプ判定デモ</p>
+            <p>ファイルタイプ判定デモ</p>
           </NuxtLink>
         </div>
       </section>

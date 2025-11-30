@@ -1,16 +1,23 @@
 <template>
   <div class="app-container">
-    <h1>ファイルMIMEタイプ判定 (SPA版)</h1>
-    <p class="description">クライアントサイドでファイルのMIMEタイプを判定します。</p>
+    <h1>ファイルタイプ判定 (SPA版)</h1>
+    <p class="description">クライアントサイドでファイルのタイプを判定します。</p>
     
-    <div class="upload-section">
-      <input 
-        type="file" 
-        @change="handleFileChange" 
-        ref="fileInput"
-        class="file-input"
-      />
-    </div>
+    <form @submit.prevent="handleSubmit" class="upload-form">
+      <div class="upload-section">
+        <input 
+          type="file" 
+          @change="handleFileChange" 
+          ref="fileInput"
+          class="file-input"
+          required
+        />
+      </div>
+      
+      <button type="submit" :disabled="!selectedFile || loading" class="submit-button">
+        {{ loading ? '分析中...' : 'ファイルを分析' }}
+      </button>
+    </form>
     
     <div v-if="loading" class="loading">
       ファイルを分析中...
@@ -74,14 +81,9 @@ const handleFileChange = (event: Event) => {
   selectedFile.value = target.files?.[0] || null
   result.value = null
   error.value = null
-  
-  // SPAなので、ファイル選択後に自動で分析
-  if (selectedFile.value) {
-    handleAnalyze()
-  }
 }
 
-const handleAnalyze = async () => {
+const handleSubmit = async () => {
   if (!selectedFile.value) return
   
   loading.value = true
@@ -92,7 +94,7 @@ const handleAnalyze = async () => {
     const formData = new FormData()
     formData.append('file', selectedFile.value)
     
-    const response = await fetch(`${apiBase}/api/detect-mime`, {
+    const response = await fetch(`${apiBase}/api/detect-file-type`, {
       method: 'POST',
       body: formData
     })
@@ -128,8 +130,12 @@ h1 {
   margin-bottom: 2rem;
 }
 
-.upload-section {
+.upload-form {
   margin-bottom: 2rem;
+}
+
+.upload-section {
+  margin-bottom: 1rem;
 }
 
 .file-input {
@@ -142,6 +148,26 @@ h1 {
 
 .file-input:hover {
   border-color: #35a372;
+}
+
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #35a372;
+}
+
+.submit-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .loading {

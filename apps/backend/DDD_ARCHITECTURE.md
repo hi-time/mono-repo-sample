@@ -17,10 +17,15 @@ src/
 │
 ├── application/        # アプリケーション層 - ユースケース
 │   └── services/       # アプリケーションサービス
+│       ├── OrderService.ts
+│       └── FileTypeDetectionService.ts
 │
 └── infrastructure/     # インフラストラクチャ層 - 技術的実装
     ├── persistence/    # データ永続化
     └── http/          # HTTP インターフェース
+        └── routes/    # HTTPルート定義
+            ├── orders.ts
+            └── file-type.ts
 ```
 
 ## 各レイヤーの役割
@@ -63,6 +68,11 @@ src/
   - ドメインオブジェクトを組み合わせてビジネスフローを実現
   - トランザクション境界を管理
 
+- **FileTypeDetectionService** (`application/services/FileTypeDetectionService.ts`)
+  - ファイルタイプ判定のユースケースを実装
+  - Magikaライブラリを使用してファイル分析を実行
+  - ビジネスロジックから技術的詳細を分離
+
 メソッド:
 - `getOrderById()`: 注文取得
 - `getAllOrders()`: 全注文取得
@@ -70,6 +80,7 @@ src/
 - `confirmOrder()`: 注文確定
 - `shipOrder()`: 注文発送
 - `cancelOrder()`: 注文キャンセル
+- `detectFileType()`: ファイルタイプ判定
 
 ### 3. Infrastructure Layer (インフラストラクチャ層)
 
@@ -83,9 +94,14 @@ src/
 
 #### HTTP Routes (HTTP ルーティング)
 - **ordersRoutes** (`infrastructure/http/routes/orders.ts`)
-  - REST API エンドポイント
+  - REST API エンドポイント（注文管理）
   - リクエスト/レスポンスの変換
   - アプリケーションサービスの呼び出し
+
+- **fileTypeRoutes** (`infrastructure/http/routes/file-type.ts`)
+  - REST API エンドポイント（ファイルタイプ判定）
+  - マルチパートファイルアップロード処理
+  - FileTypeDetectionServiceの呼び出し
 
 ## DDD の主要パターン
 

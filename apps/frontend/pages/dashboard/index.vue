@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <h1>ダッシュボード</h1>
-    <p>ファイルのMIMEタイプ判定アプリケーションのデモです。</p>
+    <p>ファイルタイプ判定アプリケーションのデモです。</p>
     
     <div class="app-links">
       <div class="app-card">

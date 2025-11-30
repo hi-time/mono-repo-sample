@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <h1>ファイルMIMEタイプ判定 (SSG版)</h1>
-    <p class="description">静的生成されたページでファイルのMIMEタイプを判定します。</p>
+    <h1>ファイルタイプ判定 (SSG版)</h1>
+    <p class="description">静的生成されたページでファイルのタイプを判定します。</p>
     
     <div class="upload-section">
       <input 
@@ -95,7 +95,7 @@ const handleAnalyze = async () => {
     const formData = new FormData()
     formData.append('file', selectedFile.value)
     
-    const response = await fetch(`${apiBase}/api/detect-mime`, {
+    const response = await fetch(`${apiBase}/api/detect-file-type`, {
       method: 'POST',
       body: formData
     })

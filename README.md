@@ -1,14 +1,14 @@
-# Turborepo DDD Sample
+# File Type Detection Demo
 
-TypeScript + Turborepo を使用したモダンな monorepo プロジェクトです。フロントエンド（Nuxt）、API（Hono + OpenAPI）、バックエンド（Fastify + DDD構成）を含む実践的なサンプル実装です。
+TypeScript + Turborepo を使用したモダンな monorepo プロジェクトです。Nuxt 3（SPA/SSR/SSG）と Fastify + Hono バックエンドでファイルタイプ判定機能を実装した実践的なサンプルです。
 
 ## 🎯 プロジェクト構成
 
 ```
-ts-ddd-sample/
+mono-repo-sample/
 ├── apps/
-│   ├── frontend/     # Nuxt 3 フロントエンドアプリケーション
-│   └── backend/      # 統合APIサーバー (Fastify + Hono + OpenAPI + DDD)
+│   ├── frontend/     # Nuxt 3 フロントエンドアプリケーション (SPA/SSR/SSG)
+│   └── backend/      # Fastify + Hono APIサーバー + ライトDDD風アーキテクチャ
 ├── packages/
 │   ├── types/        # 共有型定義
 │   └── typescript-config/  # 共有 TypeScript 設定
@@ -19,15 +19,20 @@ ts-ddd-sample/
 
 ### フロントエンド (apps/frontend)
 - **Nuxt 3** - モダンな Vue.js フレームワーク
+  - SPA モード (client-side only)
+  - SSR モード (server-side rendering)
+  - SSG モード (static site generation)
 - **TypeScript** - 型安全性
 - **Vue Router** - ルーティング
 
-### 統合APIサーバー (apps/backend)
+### バックエンド (apps/backend)
 - **Fastify** - 高性能な Node.js Web フレームワーク
-- **Hono + OpenAPI** - API ドキュメント自動生成
+- **Hono + OpenAPI** - 軽量なAPI定義とドキュメント自動生成
+- **Magika 1.0.0** - Google のファイルタイプ検出ライブラリ
+- **@fastify/multipart** - ファイルアップロード処理
 - **Zod** - スキーマバリデーション
 - **TypeScript** - 型安全性
-- **DDD (Domain-Driven Design)** - ドメイン駆動設計
+- **ライトDDD風アーキテクチャ** - Parameter/Result パターン
 
 ### 共通
 - **Turborepo** - モノレポビルドシステム
@@ -69,52 +74,62 @@ pnpm dev
 ## 🌐 アクセス URL
 
 - **フロントエンド**: http://localhost:3000
-- **統合APIサーバー**: http://localhost:3002
+  - ダッシュボード: http://localhost:3000/dashboard
+  - SPA モード: http://localhost:3000/dashboard/app-spa
+  - SSR モード: http://localhost:3000/dashboard/app-ssr
+  - SSG モード: http://localhost:3000/dashboard/app-ssg
+- **バックエンド**: http://localhost:3002
   - API ドキュメント (Swagger): http://localhost:3002/docs
   - OpenAPI Spec: http://localhost:3002/openapi.json
   - ヘルスチェック: http://localhost:3002/health
+  - API Root: http://localhost:3002/
 
 ## 📚 API エンドポイント
 
-### 統合APIサーバー (port 3002)
+### バックエンド (port 3002)
 
-#### Users (Hono + OpenAPI)
-- `GET /api/users` - ユーザー一覧取得
-- `GET /api/users/:id` - ユーザー詳細取得
+#### File Type Detection - Fastify版
+- `POST /api/detect-file-type` - ファイルタイプ判定（Fastify実装）
+  - Content-Type: `multipart/form-data`
+  - フィールド: `file` (バイナリファイル)
+  - レスポンス:
+    ```json
+    {
+      "fileName": "example.pdf",
+      "fileType": "pdf",
+      "isText": false,
+      "score": 0.99,
+      "scorePercent": "99%",
+      "description": "Detected as pdf file"
+    }
+    ```
 
-#### Products (Hono + OpenAPI)
-- `GET /api/products` - 商品一覧取得
-- `GET /api/products/:id` - 商品詳細取得
+#### File Type Detection - Hono版 (OpenAPI)
+- `POST /api/file-type/detect-file-type` - ファイルタイプ判定（Hono + OpenAPI実装）
+  - 同じファイルタイプ検出サービスを呼び出し
+  - OpenAPI仕様でドキュメント化
+  - Swagger UIで対話的にテスト可能
 
-#### Orders (Fastify + DDD)
-- `GET /api/orders` - 注文一覧取得
-- `GET /api/orders/:id` - 注文詳細取得
-- `POST /api/orders/:id/confirm` - 注文確定
-- `POST /api/orders/:id/ship` - 注文発送
-- `POST /api/orders/:id/cancel` - 注文キャンセル
+## 🏗️ ライトDDD風 アーキテクチャ (Backend)
 
-## 🏗️ DDD風 アーキテクチャ (Backend)
-
-バックエンドはシンプルなDDD風の構成で、各層にParameter/Resultクラスを配置しています:
+バックエンドはシンプルなライトDDD風の構成で、Parameter/Resultクラスによる明確なデータフローを実現しています:
 
 ```
 apps/backend/src/
 ├── domain/               # ドメイン層 (Parameter/Result)
-│   └── order/
-│       ├── CreateOrderParameter.ts  # 作成用パラメータ
-│       └── OrderResult.ts           # 注文結果データ
+│   └── file-type/
+│       ├── DetectFileTypeParameter.ts  # ファイルタイプ判定パラメータ
+│       └── FileTypeResult.ts           # ファイルタイプ判定結果
 ├── application/          # アプリケーション層 (ビジネスロジック)
 │   └── services/
-│       └── OrderService.ts          # 注文ユースケース
-├── repository/           # リポジトリ層 (データ永続化)
-│   └── InMemoryOrderRepository.ts   # インメモリ実装
+│       └── FileTypeDetectionService.ts # ファイルタイプ判定ユースケース
+├── repository/           # リポジトリ層 (データ永続化・将来用)
 ├── api/                  # API層 (ルーティング)
-│   ├── fastify/          # Fastify ルート (DDD + Orders)
-│   │   ├── orders.ts
-│   │   └── health.ts
-│   └── hono/             # Hono ルート (OpenAPI + Users/Products)
-│       ├── users.ts
-│       └── products.ts
+│   ├── fastify/          # Fastify ルート
+│   │   ├── file-type.ts  # ファイルタイプ検出
+│   │   └── health.ts     # ヘルスチェック
+│   └── hono/             # Hono ルート (OpenAPI)
+│       └── file-type.ts  # ファイルタイプ検出 (OpenAPI版)
 └── external/             # 外部サービス連携層 (将来用)
 ```
 
@@ -123,9 +138,12 @@ apps/backend/src/
 - **シンプルさ重視**: interfaceを排除し、Parameter/Resultクラスのみで構成
 - **domain層**: 各機能のParameter（入力）とResult（出力）クラスを格納
 - **application層**: ビジネスロジックとデータ操作を含むServiceクラス
-- **repository層**: データストア実装（interfaceなし）
+  - FastifyとHonoの両方から同じServiceを呼び出し
+- **repository層**: データストア実装用ディレクトリ（将来の拡張用）
 - **api層**: FastifyとHonoのルート定義を分離
-- **external層**: 外部API連携用（拡張性のため）
+  - Fastify: 高性能なルーティング
+  - Hono: OpenAPIドキュメント自動生成
+- **external層**: 外部API連携用ディレクトリ（将来の拡張用）
 
 ## 🔧 ビルド
 
@@ -157,30 +175,41 @@ pnpm type-check
 
 ## 🎨 プロジェクトの特徴
 
-### 1. Monorepo 構成
-- Turborepo による高速なビルドとキャッシング
-- ワークスペース間での型定義の共有
-- 並列実行による効率的な開発体験
+### 1. Nuxt 3 レンダリングモード比較
+- **SPA (Single Page Application)**: クライアント側のみでレンダリング、高速な画面遷移
+- **SSR (Server-Side Rendering)**: サーバー側でレンダリング、SEO最適化とパフォーマンス向上
+- **SSG (Static Site Generation)**: ビルド時に静的HTML生成、CDN配信に最適
 
 ### 2. ハイブリッドAPI構成
 - **Fastify**: 高性能なルーティングとDDD実装
 - **Hono + OpenAPI**: 軽量で柔軟なAPI定義とドキュメント自動生成
-- 両方の長所を活かした統合アーキテクチャ
+- 両方のフレームワークが同じアプリケーションサービスを呼び出す設計
 
-### 3. 型安全性
-- TypeScript による厳格な型チェック
-- Zod によるランタイムバリデーション
-- 共有型定義によるフロントエンド・バックエンド間の一貫性
+### 3. Monorepo 構成
+- Turborepo による高速なビルドとキャッシング
+- ワークスペース間での型定義の共有
+- 並列実行による効率的な開発体験
 
-### 4. API ファースト
-- OpenAPI 3.1.0 による API ドキュメント自動生成
-- Swagger UI による対話的な API テスト
-- Zod スキーマによる型安全なバリデーション
-
-### 5. シンプルなDDD風アーキテクチャ
+### 4. ライトDDD風アーキテクチャ
 - Parameter/Resultクラスによる明確なデータフロー
 - 層ごとの責務分離
 - テスタブルで保守性の高い設計
+- interfaceを使わないシンプルな実装
+
+### 5. 型安全性
+- TypeScript による厳格な型チェック
+- Zod によるランタイムバリデーション（Hono版）
+- 共有型定義によるフロントエンド・バックエンド間の一貫性
+
+### 6. ファイルタイプ検出
+- Google Magika ライブラリによる高精度な検出
+- バイナリレベルでのファイル形式判定
+- テキスト/バイナリ判定と信頼度スコア
+
+### 7. API ドキュメント自動生成
+- OpenAPI 3.1.0 による API 仕様の定義
+- Swagger UI による対話的な API テスト
+- Zod スキーマによる型安全なバリデーション
 
 ## 📦 パッケージ管理
 
@@ -202,18 +231,26 @@ pnpm add <package> --filter backend
 ### 新しいページの追加 (Nuxt)
 `apps/frontend/pages/` に `.vue` ファイルを作成するだけで自動的にルーティングが設定されます。
 
+### レンダリングモードの指定
+- **SPA**: `definePageMeta({ ssr: false })` を追加
+- **SSR**: デフォルト設定（何も指定しない）
+- **SSG**: `nuxt.config.ts` の `routeRules` で `prerender: true` を設定
+
 ### 新しい API エンドポイントの追加
 
-#### Hono + OpenAPI エンドポイント
-1. `apps/backend/src/api/hono/` に新しいルートファイルを作成
-2. OpenAPI スキーマを定義
-3. `apps/backend/src/index.ts` で Hono ルートとして登録
-
-#### Fastify + DDD風 エンドポイント
+#### ライトDDD風アーキテクチャ
 1. `apps/backend/src/domain/<feature>/` にParameter/Resultクラスを作成
-2. `apps/backend/src/application/services/` にアプリケーションサービスを作成
-3. `apps/backend/src/repository/` にリポジトリ実装を作成
-4. `apps/backend/src/api/fastify/` に Fastify ルートを作成
+2. `apps/backend/src/application/services/` にServiceクラスを作成
+
+#### Fastify版エンドポイント
+3. `apps/backend/src/api/fastify/` に Fastify ルートを作成
+4. `apps/backend/src/index.ts` でルートを登録
+
+#### Hono版エンドポイント（OpenAPI対応）
+3. `apps/backend/src/api/hono/` に Hono + OpenAPI ルートを作成
+4. `apps/backend/src/index.ts` でルートを登録
+
+**ポイント**: FastifyとHonoの両方が同じServiceクラスを呼び出すため、ビジネスロジックは一箇所に集約されます。
 
 ## 📄 ライセンス
 
@@ -223,6 +260,6 @@ MIT
 
 - [Turborepo Documentation](https://turbo.build/repo/docs)
 - [Nuxt 3 Documentation](https://nuxt.com/)
-- [Hono Documentation](https://hono.dev/)
 - [Fastify Documentation](https://www.fastify.io/)
-- [Domain-Driven Design](https://www.domainlanguage.com/ddd/)
+- [Hono Documentation](https://hono.dev/)
+- [Google Magika](https://github.com/google/magika)
