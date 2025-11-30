@@ -1,0 +1,28 @@
+{
+  "name": "ts-ddd-sample",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Turborepo monorepo with Nuxt, Fastify + Hono + OpenAPI, and DDD architecture",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "devDependencies": {
+    "turbo": "^1.13.0",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "monorepo",
+    "turborepo",
+    "nuxt",
+    "hono",
+    "fastify",
+    "ddd",
+    "openapi"
+  ],
+  "author": "",
+  "license": "MIT"
+}
