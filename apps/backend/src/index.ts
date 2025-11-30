@@ -4,6 +4,7 @@ import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { ordersRoutes } from './api/fastify/orders'
 import { healthRoutes } from './api/fastify/health'
+import { detectMimeRoutes } from './api/fastify/detect-mime'
 import { usersRoute } from './api/hono/users'
 import { productsRoute } from './api/hono/products'
 
@@ -20,6 +21,7 @@ await server.register(cors, {
 // Register Fastify routes (orders with DDD)
 await server.register(healthRoutes)
 await server.register(ordersRoutes, { prefix: '/api' })
+await server.register(detectMimeRoutes, { prefix: '/api' })
 
 // Root endpoint
 server.get('/', async (request, reply) => {
@@ -35,6 +37,7 @@ server.get('/', async (request, reply) => {
         users: '/api/users',
         products: '/api/products',
         orders: '/api/orders',
+        detectMime: '/api/detect-mime',
       },
     },
   }

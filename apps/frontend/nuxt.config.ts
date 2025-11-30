@@ -1,6 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  telemetry: false,
   
   typescript: {
     strict: true,
@@ -21,6 +22,22 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3002',
+    },
+  },
+
+  // SSG用の設定
+  nitro: {
+    preset: 'node-server',
+    prerender: {
+      routes: ['/dashboard', '/dashboard/app-ssg'],
+      crawlLinks: true,
+    },
+  },
+
+  // ルーティング設定
+  router: {
+    options: {
+      strict: false,
     },
   },
 
