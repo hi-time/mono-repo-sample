@@ -15,6 +15,18 @@
     },
     "type-check": {
       "dependsOn": ["^type-check"]
+    },
+    "backend#dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "batch#dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "frontend#dev": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

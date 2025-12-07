@@ -4,6 +4,7 @@ import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { healthRoutes } from './api/fastify/health'
 import { fileTypeRoutes } from './api/fastify/file-type'
+import { jobRoutes } from './api/fastify/jobs'
 import { fileTypeRoute } from './api/hono/file-type'
 import { initializeApplication } from './core/initializer'
 
@@ -94,6 +95,11 @@ server.get('/', async (request, reply) => {
       api: {
         fastify: {
           detectFileType: '/api/detect-file-type',
+          jobs: {
+            create: '/api/jobs',
+            status: '/api/jobs/:jobId/status',
+            result: '/api/jobs/:jobId/result',
+          },
         },
         hono: {
           detectFileType: '/api/file-type/detect-file-type',
@@ -117,6 +123,7 @@ const start = async () => {
     // Register Fastify routes
     await server.register(healthRoutes)
     await server.register(fileTypeRoutes, { prefix: '/api' })
+    await server.register(jobRoutes, { prefix: '/api' })
 
     await server.listen({ port: 3002, host: '0.0.0.0' })
     console.log('🚀 API server (Fastify + Hono) running at http://localhost:3002')

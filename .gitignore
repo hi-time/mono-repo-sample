@@ -28,6 +28,9 @@ pnpm-debug.log*
 
 # Local env files
 .env*.local
+
+# Job storage (file-based queue)
+.job-storage
 .env
 
 # Vercel

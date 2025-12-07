@@ -3,6 +3,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   telemetry: false,
   
+  devServer: {
+    host: '0.0.0.0', // すべてのネットワークインターフェースでリッスン
+    port: 3000,
+  },
+  
   typescript: {
     strict: true,
     typeCheck: true,

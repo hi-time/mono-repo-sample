@@ -103,19 +103,50 @@ const handleSubmit = async () => {
   result.value = null
   
   try {
+    // ステップ1: ジョブを投入
     const formData = new FormData()
     formData.append('file', selectedFile.value)
     
-    const response = await fetch(`${apiBase}/api/detect-file-type`, {
+    const submitResponse = await fetch(`${apiBase}/api/jobs`, {
       method: 'POST',
       body: formData
     })
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    if (!submitResponse.ok) {
+      throw new Error(`ジョブ投入失敗: ${submitResponse.status}`)
     }
     
-    result.value = await response.json()
+    const { jobId } = await submitResponse.json()
+    
+    // ステップ2: ポーリングでジョブステータスを確認
+    const maxRetries = 60 // 最大60秒待機
+    for (let i = 0; i < maxRetries; i++) {
+      await new Promise(resolve => setTimeout(resolve, 1000)) // 1秒待機
+      
+      const statusResponse = await fetch(`${apiBase}/api/jobs/${jobId}/status`)
+      if (!statusResponse.ok) {
+        throw new Error(`ステータス確認失敗: ${statusResponse.status}`)
+      }
+      
+      const { status } = await statusResponse.json()
+      
+      if (status === 'completed') {
+        // ステップ3: 結果を取得
+        const resultResponse = await fetch(`${apiBase}/api/jobs/${jobId}/result`)
+        if (!resultResponse.ok) {
+          throw new Error(`結果取得失敗: ${resultResponse.status}`)
+        }
+        
+        result.value = await resultResponse.json()
+        return
+      } else if (status === 'failed') {
+        const statusData = await statusResponse.json()
+        throw new Error(statusData.error || 'ジョブが失敗しました')
+      }
+      // pending または processing の場合は続けてポーリング
+    }
+    
+    throw new Error('タイムアウト: ジョブ処理に時間がかかりすぎています')
   } catch (err: any) {
     error.value = `エラーが発生しました: ${err.message || String(err)}`
   } finally {
