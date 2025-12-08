@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <header class="header">
-      <h1>🚀 Turborepo Sample</h1>
+      <h1>File Type Detection Demo</h1>
       <p>Nuxt 4 + Fastify 5 + Magika + OpenAPI</p>
     </header>
 

@@ -2,13 +2,13 @@
 
 TypeScript + Turborepo を使用したモダンな monorepo プロジェクトです。Nuxt 4（SPA/SSR/SSG）と Fastify 5 バックエンドでファイルタイプ判定機能を実装した実践的なサンプルです。
 
-## 🎯 プロジェクト構成
+## プロジェクト構成
 
 ```
 mono-repo-sample/
 ├── apps/
 │   ├── web/          # Nuxt 4 フロントエンドアプリケーション (SPA/SSR/SSG)
-│   ├── api/          # Fastify 5 APIサーバー + DDD風アーキテクチャ + OpenAPI/Swagger
+│   ├── api/          # Fastify 5 APIサーバー + OpenAPI/Swagger
 │   └── batch/        # バッチワーカー (非同期ジョブ処理)
 ├── packages/
 │   ├── types/        # 共有型定義
@@ -17,7 +17,7 @@ mono-repo-sample/
 └── turbo.json        # Turborepo 設定
 ```
 
-## 🚀 技術スタック
+## 技術スタック
 
 ### フロントエンド (web)
 - **Nuxt 4.2.1** - モダンな Vue.js フレームワーク
@@ -40,7 +40,7 @@ mono-repo-sample/
 - **@fastify/multipart 9.3.0** - ファイルアップロード処理
 - **TypeScript 5.9.3** - 型安全性
 - **Vitest 4.0.15** - 高速なユニットテストフレームワーク
-- **DDD風アーキテクチャ** - Parameter/Result パターン
+- **レイヤードアーキテクチャ** - Parameter/Result パターン
 
 ### バッチワーカー (apps/batch)
 - **tsx** - TypeScript実行環境
@@ -59,13 +59,13 @@ mono-repo-sample/
   - Webフロントエンド: 7テスト
   - **合計: 45テスト**
 
-## 📋 前提条件
+## 前提条件
 
 - Node.js 20.x 以上
 - pnpm 8.x 以上
 - Docker & Docker Compose
 
-## 🛠️ セットアップ
+## セットアップ
 
 ### 1. Dragonflyの起動（このプロジェクト専用）
 
@@ -144,7 +144,7 @@ pnpm test            # ウォッチモード
 > - Redis/Dragonflyが起動していない場合、ジョブの保存・取得ができません
 > - デフォルトで `localhost:6379` に接続します（環境変数 `REDIS_HOST`, `REDIS_PORT` で変更可能）
 
-## 🌐 アクセス URL
+## アクセス URL
 
 - **Dragonfly (このプロジェクト専用)**: localhost:6380
   - ジョブデータの共有ストレージ（プロセス間通信）
@@ -164,11 +164,11 @@ pnpm test            # ウォッチモード
   - **OpenAPI YAML**: http://localhost:3002/documentation/yaml
   - **外部アクセス**: `0.0.0.0:3002` でリッスン（同一ネットワーク内のIPアドレスでアクセス可能）
 
-## 📚 API エンドポイント
+## API エンドポイント
 
 ### バックエンド (port 3002)
 
-#### 🔍 API Documentation
+#### API Documentation
 - **Swagger UI**: http://localhost:3002/documentation
   - インタラクティブなAPI仕様書
   - 全エンドポイントの試行が可能
@@ -248,7 +248,7 @@ pnpm test            # ウォッチモード
 | `mimeType` | string | MIMEタイプ（例: application/pdf, image/png） |
 | `extension` | string | 推奨される拡張子 |
 
-## 🏗️ 非同期ジョブアーキテクチャ
+## 非同期ジョブアーキテクチャ
 
 このプロジェクトは**非同期ジョブ + ポーリングパターン**を採用し、ファイルタイプ検出処理をバックグラウンドで実行します。
 
@@ -343,16 +343,9 @@ graph TB
     style BATCH fill:#e1ffe1
 ```
 
-### 利点
+## アーキテクチャ (API)
 
-- **レスポンシブUI**: ファイルアップロード後すぐに操作可能
-- **スケーラビリティ**: バッチワーカーを複数起動して並列処理可能
-- **疎結合**: API層とバッチ層が独立して動作
-- **エラーハンドリング**: ジョブの失敗を追跡・再試行可能
-
-## 🏗️ ライトDDD風 アーキテクチャ (API)
-
-バックエンドはシンプルなライトDDD風の構成で、Parameter/Resultクラスによる明確なデータフローを実現しています:
+バックエンドはシンプルなレイヤードアーキテクチャで、Parameter/Resultクラスによる明確なデータフローを実現しています:
 
 ```mermaid
 graph LR
@@ -393,143 +386,9 @@ graph LR
     style SHARED fill:#fff4e1
 ```
 
-### アーキテクチャの特徴
+### アーキテクチャパターンの詳細
 
-- **シンプルさ重視**: interfaceを排除し、Parameter/Resultクラスのみで構成
-- **domain層**: 各機能のParameter（入力）とResult（出力）クラスを格納
-- **application層**: ビジネスロジックとデータ操作を含むServiceクラス
-- **repository層**: データストア実装用ディレクトリ（将来の拡張用）
-- **api層**: Fastifyのルート定義
-  - Fastify: 高性能なルーティング
-- **external層**: 外部API連携用ディレクトリ（将来の拡張用）
-
-### DDD パターンの詳細
-
-このバックエンドは、ドメイン駆動設計（DDD）の原則に基づいたライトDDD風アーキテクチャを採用しています。
-
-#### レイヤー構造
-
-```
-apps/api/src/
-├── domain/              # ドメイン層 - ビジネスロジックの中核
-│   ├── entities/       # エンティティ（将来用）
-│   ├── value-objects/  # 値オブジェクト（将来用）
-│   ├── file-type/      # ファイルタイプ判定ドメイン
-│   └── order/          # 注文管理ドメイン
-│
-├── application/        # アプリケーション層 - ユースケース
-│   └── services/       # アプリケーションサービス
-│       ├── FileTypeDetectionService.ts
-│       └── OrderService.ts
-│
-├── api/                # API層（インフラストラクチャ層の一部）
-│   └── fastify/        # Fastifyルート定義
-│
-├── repository/         # リポジトリ層（将来用）
-└── external/           # 外部連携層（将来用）
-```
-
-#### 依存関係のルール
-
-```
-API層 → Application層 → Domain層
- ↓          ↓             ↓
-実装詳細  ユースケース  ビジネスロジック
-```
-
-- **Domain層**: 他の層に依存しない、ビジネスロジックの中核
-- **Application層**: Domain層にのみ依存、ユースケースを実装
-- **API層**: すべての層に依存可能、HTTPリクエスト/レスポンス処理
-
-#### DDD の主要パターン
-
-##### 1. Parameter/Result パターン（値オブジェクトの簡易版）
-
-```typescript
-// Parameter（入力）
-export class DetectFileTypeParameter {
-  constructor(
-    public readonly fileData: Uint8Array,
-    public readonly fileName: string
-  ) {}
-}
-
-// Result（出力）
-export class DetectFileTypeResult {
-  constructor(
-    public readonly fileName: string,
-    public readonly fileType: string,
-    public readonly isText: boolean,
-    public readonly score: number,
-    // ...
-  ) {}
-}
-```
-
-**特徴**:
-- イミュータブル（readonly）
-- バリデーションロジックを含む
-- 型安全なデータ受け渡し
-
-##### 2. Application Service パターン
-
-```typescript
-export class FileTypeDetectionService {
-  async detectFileType(
-    parameter: DetectFileTypeParameter
-  ): Promise<DetectFileTypeResult> {
-    // ビジネスロジックの実装
-    // 外部ライブラリ（Magika）の呼び出し
-    // Resultオブジェクトの生成
-  }
-}
-```
-
-**責任**:
-- ユースケースの実行
-- ドメインオブジェクトの組み合わせ
-- トランザクション境界の管理
-
-##### 3. Repository パターン（将来の拡張用）
-
-```typescript
-// 例: 将来的なデータ永続化
-interface IOrderRepository {
-  findById(id: OrderId): Promise<Order | null>
-  save(order: Order): Promise<void>
-}
-
-class InMemoryOrderRepository implements IOrderRepository {
-  // メモリ内データストア実装
-}
-```
-
-**利点**:
-- データアクセスの抽象化
-- テストが容易（モック化可能）
-- 実装の切り替えが簡単（メモリ → DB）
-
-#### ベストプラクティス
-
-1. **ドメインロジックはDomain層に集中**
-   - API層やApplication層にビジネスロジックを漏らさない
-   - Parameter/Resultクラスでドメイン知識をカプセル化
-
-2. **不変性を保つ**
-   - Parameter/Resultクラスは `readonly` で定義
-   - 予測可能な動作とバグの削減
-
-3. **明示的な型を使用**
-   - プリミティブ型の代わりにParameter/Resultクラスを使用
-   - 例: `string` → `DetectFileTypeParameter`
-
-4. **単一責任の原則**
-   - 各Serviceは1つのユースケースに集中
-   - ファイルタイプ判定、注文管理など機能ごとに分離
-
-5. **テスタビリティ**
-   - Serviceクラスは依存を注入可能に設計
-   - モックを使用した単体テストが容易
+ドメイン駆動設計ではありませんが、将来的にDDDを考慮してレイヤードアーキテクチャを採用しています。
 
 #### 拡張のガイドライン
 
@@ -537,7 +396,7 @@ class InMemoryOrderRepository implements IOrderRepository {
 
 1. `domain/<feature>/` に Parameter/Result クラスを作成
 2. `application/services/` に Service クラスを作成
-3. `api/fastify/` または `api/hono/` にルート定義を追加
+3. `api/fastify/` にルート定義を追加
 4. Service を index.ts で登録
 
 ##### データベースへの移行
@@ -554,7 +413,7 @@ class InMemoryOrderRepository implements IOrderRepository {
 
 ---
 
-## 📖 実装ガイド
+## 実装ガイド
 
 ### アーキテクチャ概要
 
@@ -673,11 +532,9 @@ export const jobRepository = new InMemoryJobRepository()
 - ペンディングジョブの取得（バッチ用）
 - 古いジョブのクリーンアップ
 
-**重要**: シングルトンインスタンスとしてエクスポート（API と Batch で同一インスタンスを共有）
-
 ---
 
-## 🛠️ 実装ルール
+## 実装ルール
 
 ### 1. パッケージ管理
 
@@ -1121,140 +978,7 @@ pnpm dev
 
 ---
 
-## 🐛 トラブルシューティング
-
-### 問題1: `@repo/shared` が見つからない
-
-**原因**: moduleResolution の設定が不適切
-
-**解決策**: tsconfig.json に以下を追加
-
-```json
-{
-  "compilerOptions": {
-    "moduleResolution": "bundler"
-  }
-}
-```
-
-### 問題2: Map や Promise が見つからない
-
-**原因**: lib 設定が不足
-
-**解決策**: tsconfig.json に以下を追加
-
-```json
-{
-  "compilerOptions": {
-    "lib": ["ES2015"]
-  }
-}
-```
-
-### 問題3: crypto モジュールが見つからない
-
-**原因**: @types/node がインストールされていない
-
-**解決策**:
-
-```bash
-pnpm add -D @types/node
-```
-
-tsconfig.json に追加:
-
-```json
-{
-  "compilerOptions": {
-    "types": ["node"]
-  }
-}
-```
-
-### 問題4: Magika の型エラー
-
-**原因**: Magika の型定義が不完全
-
-**解決策**: `as any` でキャストして使用
-
-```typescript
-const identifyResult = await magikaInstance.identifyBytes(data) as any
-const output = identifyResult.prediction?.output
-```
-
----
-
-## 📊 図表作成ルール (Mermaid)
-
-### 基本方針
-
-このプロジェクトのドキュメントでは、すべての図表を **Mermaid** 形式で記述します。
-
-#### Mermaid を使用する理由
-
-1. **バージョン管理**: テキストベースのため Git で差分管理が容易
-2. **保守性**: コード変更に合わせて図も簡単に更新可能
-3. **一貫性**: Markdown と統合され、同じファイル内で管理
-4. **可読性**: GitHub、VS Code、多くのツールで自動レンダリング
-
-### 図の種類と用途
-
-#### 1. シーケンス図 (Sequence Diagram)
-
-**用途**: API呼び出しフロー、非同期処理の流れ、時系列的なやり取り
-
-**記述ルール**:
-- `participant` で登場人物を定義（別名を付ける場合は `as` を使用）
-- `->>` で同期呼び出し、`-->>` で返却
-- `loop` でループ処理を表現
-- `Note` でコメントを追加
-
-#### 2. グラフ図 (Graph / Flowchart)
-
-**用途**: ディレクトリ構造、依存関係、データフロー、階層構造
-
-**記述ルール**:
-- `graph TB` (Top to Bottom), `LR` (Left to Right) で方向指定
-- `subgraph` でグループ化
-- `-->` で実線矢印、`-.->` で点線矢印
-- `[テキスト]` でノード、`style` で色指定
-- `fill:#色コード` で背景色を設定
-
-#### 3. クラス図 (Class Diagram)
-
-**用途**: クラス設計、継承関係、インターフェース定義
-
-**記述ルール**:
-- `class クラス名` でクラス定義
-- `+` public、`-` private、`#` protected
-- `メソッド名(引数) 戻り値` でメソッド定義
-- `-->` で依存関係、`--|>` で継承
-
-### 色の使用ルール
-
-```markdown
-- Web: #e1f5ff (薄い青)
-- Backend/API: #ffe1e1 (薄い赤)
-- Batch/Worker: #e1ffe1 (薄い緑)
-- Shared Package: #fff4e1 (薄い黄)
-- Database/Storage: #f0e1ff (薄い紫)
-```
-
-### VS Code での Mermaid プレビュー
-
-推奨拡張機能:
-```bash
-code --install-extension bierner.markdown-mermaid
-code --install-extension tomoyukim.vscode-mermaid-editor
-```
-
-### 参考リンク
-
-- [Mermaid 公式ドキュメント](https://mermaid.js.org/)
-- [Mermaid Live Editor](https://mermaid.live/)
-- [GitHub の Mermaid サポート](https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/)
-
----## 🔧 ビルド
+## ビルド
 
 すべてのアプリケーションをビルド:
 
@@ -1274,7 +998,7 @@ cd apps/api
 pnpm build
 ```
 
-## 📝 型チェック
+## 型チェック
 
 すべてのパッケージで型チェックを実行:
 
@@ -1282,37 +1006,7 @@ pnpm build
 pnpm type-check
 ```
 
-## 🎨 プロジェクトの特徴
-
-### 1. Nuxt 3 レンダリングモード比較
-- **SPA (Single Page Application)**: クライアント側のみでレンダリング、高速な画面遷移
-- **SSR (Server-Side Rendering)**: サーバー側でレンダリング、SEO最適化とパフォーマンス向上
-- **SSG (Static Site Generation)**: ビルド時に静的HTML生成、CDN配信に最適
-
-### 2. Fastify API構成
-- **Fastify**: 高性能なルーティングとDDD実装
-
-### 3. Monorepo 構成
-- Turborepo による高速なビルドとキャッシング
-- ワークスペース間での型定義の共有
-- 並列実行による効率的な開発体験
-
-### 4. ライトDDD風アーキテクチャ
-- Parameter/Resultクラスによる明確なデータフロー
-- 層ごとの責務分離
-- テスタブルで保守性の高い設計
-- interfaceを使わないシンプルな実装
-
-### 5. 型安全性
-- TypeScript による厳格な型チェック
-- 共有型定義によるフロントエンド・バックエンド間の一貫性
-
-### 6. ファイルタイプ検出
-- Google Magika ライブラリによる高精度な検出
-- バイナリレベルでのファイル形式判定
-- テキスト/バイナリ判定と信頼度スコア
-
-## 📦 パッケージ管理
+## パッケージ管理
 
 このプロジェクトは pnpm ワークスペースを使用しています。
 
@@ -1326,71 +1020,3 @@ pnpm add -w <package>
 pnpm add <package> --filter web
 pnpm add <package> --filter api
 ```
-
-## 🤝 開発のヒント
-
-### 新しいページの追加 (Nuxt)
-`apps/web/pages/` に `.vue` ファイルを作成するだけで自動的にルーティングが設定されます。
-
-### レンダリングモードの指定
-- **SPA**: `definePageMeta({ ssr: false })` を追加
-- **SSR**: デフォルト設定（何も指定しない）
-- **SSG**: `nuxt.config.ts` の `routeRules` で `prerender: true` を設定
-
-### 新しい API エンドポイントの追加
-
-#### ライトDDD風アーキテクチャ
-1. `apps/api/src/domain/<feature>/` にParameter/Resultクラスを作成
-2. `apps/api/src/application/services/` にServiceクラスを作成
-
-#### Fastify版エンドポイント
-3. `apps/api/src/api/fastify/` に Fastify ルートを作成
-4. `apps/api/src/index.ts` でルートを登録
-
-### デバッグ設定
-
-VS Codeでのデバッグ設定は `.vscode/launch.json` に記載されています。
-
-#### 利用可能なデバッグ設定
-
-1. **Backend: Debug**
-   - バックエンドをデバッグモードで起動
-   - pnpm経由でapiフィルターを使用して実行
-
-2. **Backend: Attach**
-   - 既に起動しているバックエンドプロセスにアタッチ
-   - ポート9229で接続
-
-3. **Frontend: Debug**
-   - フロントエンドをChromeブラウザでデバッグ
-   - `http://localhost:3000` に接続
-
-4. **Backend: Debug (tsx watch)**
-   - tsx watchモードでバックエンドをデバッグ
-   - ファイル変更時に自動再起動
-
-5. **All: Debug (Compound)**
-   - Turborepoの全アプリを同時起動
-
-6. **Full Stack Debug (Compound)**
-   - バックエンドとフロントエンドを同時にデバッグ
-   - フルスタック開発に最適
-
-#### デバッグの開始方法
-
-1. VS Codeのデバッグパネルを開く（`Ctrl+Shift+D` / `Cmd+Shift+D`）
-2. ドロップダウンから使用する設定を選択
-3. F5キーまたは再生ボタンをクリック
-4. ブレークポイントを設定してコードをステップ実行
-
-## 📄 ライセンス
-
-MIT
-
-## 🙏 参考資料
-
-- [Turborepo Documentation](https://turbo.build/repo/docs)
-- [Nuxt 3 Documentation](https://nuxt.com/)
-- [Fastify Documentation](https://www.fastify.io/)
-- [Hono Documentation](https://hono.dev/)
-- [Google Magika](https://github.com/google/magika)
