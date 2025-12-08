@@ -2,7 +2,7 @@
   <div class="container">
     <header class="header">
       <h1>🚀 Turborepo DDD Sample</h1>
-      <p>Nuxt + Fastify + Magika</p>
+      <p>Nuxt 4 + Fastify 5 + Magika + OpenAPI</p>
     </header>
 
     <main class="main">
@@ -10,10 +10,16 @@
         <h2>📦 プロジェクト構成</h2>
         <ul class="feature-list">
           <li>
-            <strong>web</strong> - Nuxt 3 フロントエンドアプリケーション
+            <strong>apps/web</strong> - Nuxt 4 フロントエンドアプリケーション
           </li>
           <li>
-            <strong>apps/api</strong> - Fastify API サーバー + Magika
+            <strong>apps/api</strong> - Fastify 5 API サーバー + Magika + OpenAPI/Swagger
+          </li>
+          <li>
+            <strong>apps/batch</strong> - バッチワーカー (非同期ジョブ処理)
+          </li>
+          <li>
+            <strong>packages/shared</strong> - 共有ドメインロジック (Job, Repository)
           </li>
           <li>
             <strong>packages/types</strong> - 共有型定義
@@ -28,7 +34,45 @@
             <h3>📊 ダッシュボード</h3>
             <p>ファイルタイプ判定デモ</p>
           </NuxtLink>
+
+          <a href="http://localhost:3002/documentation" target="_blank" class="link-card external">
+            <h3>📚 API仕様書 (Swagger UI)</h3>
+            <p>インタラクティブなAPI仕様書</p>
+          </a>
+
+          <a href="http://localhost:3002/documentation/json" target="_blank" class="link-card external">
+            <h3>📄 OpenAPI JSON</h3>
+            <p>OpenAPI 3.0仕様 (JSON形式)</p>
+          </a>
+
+          <a href="http://localhost:3002/documentation/yaml" target="_blank" class="link-card external">
+            <h3>📄 OpenAPI YAML</h3>
+            <p>OpenAPI 3.0仕様 (YAML形式)</p>
+          </a>
+
+          <a href="http://localhost:3002/health" target="_blank" class="link-card external">
+            <h3>💚 ヘルスチェック</h3>
+            <p>APIサーバーの状態確認</p>
+          </a>
         </div>
+      </section>
+
+      <section class="section">
+        <h2>⚙️ アーキテクチャ</h2>
+        <ul class="feature-list">
+          <li>
+            <strong>非同期ジョブパターン</strong> - API + バッチワーカー + ポーリング
+          </li>
+          <li>
+            <strong>型安全なAPI</strong> - Zod + fastify-type-provider-zod
+          </li>
+          <li>
+            <strong>DDD風設計</strong> - Parameter/Result パターン
+          </li>
+          <li>
+            <strong>モノレポ構成</strong> - Turborepo + pnpm workspace
+          </li>
+        </ul>
       </section>
     </main>
   </div>
@@ -103,6 +147,19 @@
   text-decoration: none;
   color: inherit;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.link-card.external {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.link-card.external h3 {
+  color: white;
+}
+
+.link-card.external p {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .link-card:hover {

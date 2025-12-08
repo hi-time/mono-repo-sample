@@ -1,14 +1,14 @@
 # File Type Detection Demo
 
-TypeScript + Turborepo を使用したモダンな monorepo プロジェクトです。Nuxt 3（SPA/SSR/SSG）と Fastify バックエンドでファイルタイプ判定機能を実装した実践的なサンプルです。
+TypeScript + Turborepo を使用したモダンな monorepo プロジェクトです。Nuxt 4（SPA/SSR/SSG）と Fastify 5 バックエンドでファイルタイプ判定機能を実装した実践的なサンプルです。
 
 ## 🎯 プロジェクト構成
 
 ```
 mono-repo-sample/
 ├── apps/
-│   ├── web/          # Nuxt 3 フロントエンドアプリケーション (SPA/SSR/SSG)
-│   ├── api/          # Fastify APIサーバー + ライトDDD風アーキテクチャ
+│   ├── web/          # Nuxt 4 フロントエンドアプリケーション (SPA/SSR/SSG)
+│   ├── api/          # Fastify 5 APIサーバー + DDD風アーキテクチャ + OpenAPI/Swagger
 │   └── batch/        # バッチワーカー (非同期ジョブ処理)
 ├── packages/
 │   ├── types/        # 共有型定義
@@ -20,19 +20,24 @@ mono-repo-sample/
 ## 🚀 技術スタック
 
 ### フロントエンド (web)
-- **Nuxt 3** - モダンな Vue.js フレームワーク
+- **Nuxt 4.2.1** - モダンな Vue.js フレームワーク
   - SPA モード (client-side only)
   - SSR モード (server-side rendering)
   - SSG モード (static site generation)
-- **TypeScript** - 型安全性
-- **Vue Router** - ルーティング
+- **Vue 3.5.25** - プログレッシブフレームワーク
+- **TypeScript 5.9.3** - 型安全性
+- **Vue Router 4.5.0** - ルーティング
 
 ### バックエンド (apps/api)
-- **Fastify** - 高性能な Node.js Web フレームワーク
+- **Fastify 5.6.2** - 高性能な Node.js Web フレームワーク
 - **Magika 1.0.0** - Google のファイルタイプ検出ライブラリ
-- **@fastify/multipart** - ファイルアップロード処理
-- **TypeScript** - 型安全性
-- **ライトDDD風アーキテクチャ** - Parameter/Result パターン
+- **@fastify/swagger 9.6.1** - OpenAPI仕様自動生成
+- **@fastify/swagger-ui 5.2.3** - Swagger UI提供
+- **fastify-type-provider-zod 6.1.0** - Zodスキーマによる型安全なAPI
+- **Zod 4** - スキーマバリデーション
+- **@fastify/multipart 9.3.0** - ファイルアップロード処理
+- **TypeScript 5.9.3** - 型安全性
+- **DDD風アーキテクチャ** - Parameter/Result パターン
 
 ### バッチワーカー (apps/batch)
 - **tsx** - TypeScript実行環境
@@ -106,20 +111,30 @@ pnpm dev
   - ジョブデータの共有ストレージ（プロセス間通信）
   - API と Batch Worker 間でジョブ情報を共有
   - 他のプロジェクトのRedis(6379)とは独立
-- **フロントエンド**: http://localhost:3000
-  - ダッシュボード: http://localhost:3000/dashboard
-  - SPA モード: http://localhost:3000/dashboard/app-spa
-  - SSR モード: http://localhost:3000/dashboard/app-ssr
-  - SSG モード: http://localhost:3000/dashboard/app-ssg
-  - **外部アクセス**: `0.0.0.0:3000` でリッスン（同一ネットワーク内のIPアドレスでアクセス可能）
+- **フロントエンド**: http://localhost:3001
+  - ダッシュボード: http://localhost:3001/dashboard
+  - SPA モード: http://localhost:3001/dashboard/app-spa
+  - SSR モード: http://localhost:3001/dashboard/app-ssr
+  - SSG モード: http://localhost:3001/dashboard/app-ssg
+  - **外部アクセス**: `0.0.0.0:3001` でリッスン（同一ネットワーク内のIPアドレスでアクセス可能）
 - **バックエンド**: http://localhost:3002
   - ヘルスチェック: http://localhost:3002/health
   - API Root: http://localhost:3002/
+  - **API Documentation (Swagger UI)**: http://localhost:3002/documentation
+  - **OpenAPI JSON**: http://localhost:3002/documentation/json
+  - **OpenAPI YAML**: http://localhost:3002/documentation/yaml
   - **外部アクセス**: `0.0.0.0:3002` でリッスン（同一ネットワーク内のIPアドレスでアクセス可能）
 
 ## 📚 API エンドポイント
 
 ### バックエンド (port 3002)
+
+#### 🔍 API Documentation
+- **Swagger UI**: http://localhost:3002/documentation
+  - インタラクティブなAPI仕様書
+  - 全エンドポイントの試行が可能
+- **OpenAPI JSON**: http://localhost:3002/documentation/json
+- **OpenAPI YAML**: http://localhost:3002/documentation/yaml
 
 #### 非同期ジョブ管理 API
 - `POST /api/jobs` - ファイルタイプ判定ジョブの投入
@@ -129,7 +144,7 @@ pnpm dev
     ```json
     {
       "jobId": "550e8400-e29b-41d4-a716-446655440000",
-      "status": "pending"
+      "message": "ジョブを投入しました"
     }
     ```
 
@@ -153,7 +168,7 @@ pnpm dev
       "fileType": "pdf",
       "isText": false,
       "score": 0.99,
-      "scorePercent": 99,
+      "scorePercent": "99%",
       "description": "PDF document",
       "group": "document",
       "mimeType": "application/pdf",
@@ -161,7 +176,7 @@ pnpm dev
     }
     ```
 
-#### File Type Detection - Fastify版 (レガシー)
+#### File Type Detection - 同期API
 - `POST /api/detect-file-type` - ファイルタイプ判定（同期版・デバッグ用）
   - Content-Type: `multipart/form-data`
   - フィールド: `file` (バイナリファイル)
