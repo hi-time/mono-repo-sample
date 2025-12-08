@@ -85,7 +85,7 @@ pnpm dev
 
 ```bash
 # フロントエンド (Nuxt) - http://localhost:3000
-cd web
+cd apps/web
 pnpm dev
 
 # 統合APIサーバー (Fastify + Hono) - http://localhost:3002
@@ -212,7 +212,7 @@ pnpm dev
 
 ```mermaid
 sequenceDiagram
-    participant F as Frontend
+    participant F as Web
     participant B as API<br/>(Fastify)
     participant S as Job Storage<br/>(Shared)
     participant W as Batch Worker<br/>(Magika)
@@ -1195,7 +1195,7 @@ const output = identifyResult.prediction?.output
 ### 色の使用ルール
 
 ```markdown
-- Frontend: #e1f5ff (薄い青)
+- Web: #e1f5ff (薄い青)
 - Backend/API: #ffe1e1 (薄い赤)
 - Batch/Worker: #e1ffe1 (薄い緑)
 - Shared Package: #fff4e1 (薄い黄)
@@ -1228,7 +1228,7 @@ pnpm build
 
 ```bash
 # フロントエンド
-cd web
+cd apps/web
 pnpm build
 
 # 統合APIサーバー
@@ -1300,7 +1300,7 @@ pnpm add <package> --filter api
 ## 🤝 開発のヒント
 
 ### 新しいページの追加 (Nuxt)
-`web/pages/` に `.vue` ファイルを作成するだけで自動的にルーティングが設定されます。
+`apps/web/pages/` に `.vue` ファイルを作成するだけで自動的にルーティングが設定されます。
 
 ### レンダリングモードの指定
 - **SPA**: `definePageMeta({ ssr: false })` を追加
