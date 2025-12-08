@@ -47,6 +47,9 @@ importers:
       zod:
         specifier: ^4
         version: 4.1.13
+      zod-to-json-schema:
+        specifier: ^3.25.0
+        version: 3.25.0(zod@4.1.13)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -7898,6 +7901,14 @@ packages:
       archiver-utils: 5.0.2
       compress-commons: 6.0.2
       readable-stream: 4.7.0
+    dev: false
+
+  /zod-to-json-schema@3.25.0(zod@4.1.13):
+    resolution: {integrity: sha512-HvWtU2UG41LALjajJrML6uQejQhNJx+JBO9IflpSja4R03iNWfKXrj6W2h7ljuLyc1nKS+9yDyL/9tD1U/yBnQ==}
+    peerDependencies:
+      zod: ^3.25 || ^4
+    dependencies:
+      zod: 4.1.13
     dev: false
 
   /zod@4.1.13:

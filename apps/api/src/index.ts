@@ -4,6 +4,7 @@ import {
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
+  jsonSchemaTransform,
 } from 'fastify-type-provider-zod'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
@@ -64,6 +65,7 @@ const start = async () => {
     // Register Swagger/OpenAPI
     await server.register(fastifySwagger, {
       openapi: {
+        openapi: '3.1.0',
         info: {
           title: 'File Type Detection API',
           description: 'Fastify API with file type detection and job processing',
@@ -82,6 +84,7 @@ const start = async () => {
           { name: 'jobs', description: 'Job management endpoints' },
         ],
       },
+      transform: jsonSchemaTransform,
     })
 
     // Register Swagger UI

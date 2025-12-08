@@ -49,8 +49,8 @@ export const JobStatusParamsSchema = z.object({
 export const JobStatusResponseSchema = z.object({
   jobId: z.string(),
   status: z.enum(['pending', 'processing', 'completed', 'failed']),
-  createdAt: z.string().or(z.date()),
-  updatedAt: z.string().or(z.date()),
+  createdAt: z.string(),
+  updatedAt: z.string(),
   error: z.string().optional(),
 })
 
