@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <header class="header">
-      <h1>🚀 Turborepo DDD Sample</h1>
+      <h1>🚀 Turborepo Sample</h1>
       <p>Nuxt 4 + Fastify 5 + Magika + OpenAPI</p>
     </header>
 
@@ -98,7 +98,7 @@
             <strong>型安全なAPI</strong> - Zod + fastify-type-provider-zod (OpenAPI 3.1自動生成)
           </li>
           <li>
-            <strong>DDD風設計</strong> - Parameter/Result パターン + レイヤードアーキテクチャ
+            <strong>レイヤードアーキテクチャ</strong> - Parameter/Result パターン
           </li>
           <li>
             <strong>モノレポ構成</strong> - Turborepo + pnpm workspace

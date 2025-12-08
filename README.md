@@ -27,6 +27,8 @@ mono-repo-sample/
 - **Vue 3.5.25** - プログレッシブフレームワーク
 - **TypeScript 5.9.3** - 型安全性
 - **Vue Router 4.5.0** - ルーティング
+- **Vitest 4.0.15** - 高速なユニットテストフレームワーク
+- **@nuxt/test-utils 3.21.0** - Nuxtコンポーネントテストユーティリティ
 
 ### バックエンド (apps/api)
 - **Fastify 5.6.2** - 高性能な Node.js Web フレームワーク
@@ -37,17 +39,25 @@ mono-repo-sample/
 - **Zod 4** - スキーマバリデーション
 - **@fastify/multipart 9.3.0** - ファイルアップロード処理
 - **TypeScript 5.9.3** - 型安全性
+- **Vitest 4.0.15** - 高速なユニットテストフレームワーク
 - **DDD風アーキテクチャ** - Parameter/Result パターン
 
 ### バッチワーカー (apps/batch)
 - **tsx** - TypeScript実行環境
 - **Magika 1.0.0** - ファイルタイプ検出処理
+- **Vitest 4.0.15** - 高速なユニットテストフレームワーク
 - **非同期ジョブパターン** - ポーリング + ジョブキュー
 - **@repo/shared** - バックエンドとの共有ドメインロジック
 
 ### 共通
 - **Turborepo** - モノレポビルドシステム
 - **pnpm** - 高速なパッケージマネージャー
+- **Vitest 4.0.15** - 全パッケージ共通のテストフレームワーク
+  - APIサーバー: 13テスト
+  - バッチワーカー: 13テスト
+  - 共有パッケージ: 12テスト
+  - Webフロントエンド: 7テスト
+  - **合計: 45テスト**
 
 ## 📋 前提条件
 
@@ -87,7 +97,7 @@ pnpm dev
 個別に起動する場合:
 
 ```bash
-# フロントエンド (Nuxt) - http://localhost:3000
+# フロントエンド (Nuxt) - http://localhost:3001
 cd apps/web
 pnpm dev
 
@@ -98,6 +108,35 @@ pnpm dev
 # バッチワーカー (非同期ジョブ処理)
 cd apps/batch
 pnpm dev
+```
+
+### 3. テストの実行
+
+各パッケージのテスト:
+
+```bash
+# APIサーバーのテスト
+cd apps/api
+pnpm test:run        # テストを実行
+pnpm test            # ウォッチモード
+pnpm test:coverage   # カバレッジ付き
+pnpm test:ui         # インタラクティブUI
+
+# バッチワーカーのテスト
+cd apps/batch
+pnpm test:run        # テストを実行
+pnpm test            # ウォッチモード
+
+# Webフロントエンドのテスト
+cd apps/web
+pnpm test:run        # テストを実行
+pnpm test            # ウォッチモード
+pnpm test:ui         # インタラクティブUI
+
+# 共有パッケージのテスト
+cd packages/shared
+pnpm test:run        # テストを実行
+pnpm test            # ウォッチモード
 ```
 
 > **重要**: 
