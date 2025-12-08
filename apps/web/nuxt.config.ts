@@ -7,6 +7,14 @@ export default defineNuxtConfig({
     host: '0.0.0.0', // すべてのネットワークインターフェースでリッスン
     port: 3000,
   },
+
+  vite: {
+    server: {
+      hmr: {
+        port: 24679, // WebSocketポートを変更（デフォルトの24678から変更）
+      },
+    },
+  },
   
   typescript: {
     strict: true,
