@@ -1,6 +1,6 @@
 # File Type Detection Demo
 
-TypeScript + Turborepo を使用したモダンな monorepo プロジェクトです。Nuxt 3（SPA/SSR/SSG）と Fastify + Hono バックエンドでファイルタイプ判定機能を実装した実践的なサンプルです。
+TypeScript + Turborepo を使用したモダンな monorepo プロジェクトです。Nuxt 3（SPA/SSR/SSG）と Fastify バックエンドでファイルタイプ判定機能を実装した実践的なサンプルです。
 
 ## 🎯 プロジェクト構成
 
@@ -8,7 +8,7 @@ TypeScript + Turborepo を使用したモダンな monorepo プロジェクト�
 mono-repo-sample/
 ├── apps/
 │   ├── web/          # Nuxt 3 フロントエンドアプリケーション (SPA/SSR/SSG)
-│   ├── api/          # Fastify + Hono APIサーバー + ライトDDD風アーキテクチャ
+│   ├── api/          # Fastify APIサーバー + ライトDDD風アーキテクチャ
 │   └── batch/        # バッチワーカー (非同期ジョブ処理)
 ├── packages/
 │   ├── types/        # 共有型定義
@@ -29,10 +29,8 @@ mono-repo-sample/
 
 ### バックエンド (apps/api)
 - **Fastify** - 高性能な Node.js Web フレームワーク
-- **Hono + OpenAPI** - 軽量なAPI定義とドキュメント自動生成
 - **Magika 1.0.0** - Google のファイルタイプ検出ライブラリ
 - **@fastify/multipart** - ファイルアップロード処理
-- **Zod** - スキーマバリデーション
 - **TypeScript** - 型安全性
 - **ライトDDD風アーキテクチャ** - Parameter/Result パターン
 
@@ -88,7 +86,7 @@ pnpm dev
 cd apps/web
 pnpm dev
 
-# 統合APIサーバー (Fastify + Hono) - http://localhost:3002
+# APIサーバー (Fastify) - http://localhost:3002
 cd apps/api
 pnpm dev
 
@@ -115,8 +113,6 @@ pnpm dev
   - SSG モード: http://localhost:3000/dashboard/app-ssg
   - **外部アクセス**: `0.0.0.0:3000` でリッスン（同一ネットワーク内のIPアドレスでアクセス可能）
 - **バックエンド**: http://localhost:3002
-  - API ドキュメント (Swagger): http://localhost:3002/docs
-  - OpenAPI Spec: http://localhost:3002/openapi.json
   - ヘルスチェック: http://localhost:3002/health
   - API Root: http://localhost:3002/
   - **外部アクセス**: `0.0.0.0:3002` でリッスン（同一ネットワーク内のIPアドレスでアクセス可能）
@@ -197,12 +193,6 @@ pnpm dev
 | `group` | string | ファイルグループ（例: document, code, image） |
 | `mimeType` | string | MIMEタイプ（例: application/pdf, image/png） |
 | `extension` | string | 推奨される拡張子 |
-
-#### File Type Detection - Hono版 (OpenAPI)
-- `POST /api/file-type/detect-file-type` - ファイルタイプ判定（Hono + OpenAPI実装）
-  - 同じファイルタイプ検出サービスを呼び出し
-  - OpenAPI仕様でドキュメント化
-  - Swagger UIで対話的にテスト可能
 
 ## 🏗️ 非同期ジョブアーキテクチャ
 
@@ -317,7 +307,6 @@ graph LR
         
         subgraph "API層"
             F["fastify/<br/>file-type.ts<br/>health.ts<br/>jobs.ts"]
-            H["hono/<br/>file-type.ts"]
         end
         
         subgraph "Application層"
@@ -337,7 +326,6 @@ graph LR
         end
         
         F --> S
-        H --> S
         S --> D
         S -.->|将来| R
         S -.->|将来| E
@@ -346,7 +334,6 @@ graph LR
     SHARED["@repo/shared<br/>(Job管理)"] -.->|import| F
     
     style F fill:#e1f5ff
-    style H fill:#e1f5ff
     style S fill:#ffe1e1
     style D fill:#e1ffe1
     style SHARED fill:#fff4e1
@@ -357,11 +344,9 @@ graph LR
 - **シンプルさ重視**: interfaceを排除し、Parameter/Resultクラスのみで構成
 - **domain層**: 各機能のParameter（入力）とResult（出力）クラスを格納
 - **application層**: ビジネスロジックとデータ操作を含むServiceクラス
-  - FastifyとHonoの両方から同じServiceを呼び出し
 - **repository層**: データストア実装用ディレクトリ（将来の拡張用）
-- **api層**: FastifyとHonoのルート定義を分離
+- **api層**: Fastifyのルート定義
   - Fastify: 高性能なルーティング
-  - Hono: OpenAPIドキュメント自動生成
 - **external層**: 外部API連携用ディレクトリ（将来の拡張用）
 
 ### DDD パターンの詳細
@@ -384,8 +369,7 @@ apps/api/src/
 │       └── OrderService.ts
 │
 ├── api/                # API層（インフラストラクチャ層の一部）
-│   ├── fastify/        # Fastifyルート定義
-│   └── hono/           # Honoルート定義
+│   └── fastify/        # Fastifyルート定義
 │
 ├── repository/         # リポジトリ層（将来用）
 └── external/           # 外部連携層（将来用）
@@ -1251,10 +1235,8 @@ pnpm type-check
 - **SSR (Server-Side Rendering)**: サーバー側でレンダリング、SEO最適化とパフォーマンス向上
 - **SSG (Static Site Generation)**: ビルド時に静的HTML生成、CDN配信に最適
 
-### 2. ハイブリッドAPI構成
+### 2. Fastify API構成
 - **Fastify**: 高性能なルーティングとDDD実装
-- **Hono + OpenAPI**: 軽量で柔軟なAPI定義とドキュメント自動生成
-- 両方のフレームワークが同じアプリケーションサービスを呼び出す設計
 
 ### 3. Monorepo 構成
 - Turborepo による高速なビルドとキャッシング
@@ -1269,18 +1251,12 @@ pnpm type-check
 
 ### 5. 型安全性
 - TypeScript による厳格な型チェック
-- Zod によるランタイムバリデーション（Hono版）
 - 共有型定義によるフロントエンド・バックエンド間の一貫性
 
 ### 6. ファイルタイプ検出
 - Google Magika ライブラリによる高精度な検出
 - バイナリレベルでのファイル形式判定
 - テキスト/バイナリ判定と信頼度スコア
-
-### 7. API ドキュメント自動生成
-- OpenAPI 3.1.0 による API 仕様の定義
-- Swagger UI による対話的な API テスト
-- Zod スキーマによる型安全なバリデーション
 
 ## 📦 パッケージ管理
 
@@ -1316,12 +1292,6 @@ pnpm add <package> --filter api
 #### Fastify版エンドポイント
 3. `apps/api/src/api/fastify/` に Fastify ルートを作成
 4. `apps/api/src/index.ts` でルートを登録
-
-#### Hono版エンドポイント（OpenAPI対応）
-3. `apps/api/src/api/hono/` に Hono + OpenAPI ルートを作成
-4. `apps/api/src/index.ts` でルートを登録
-
-**ポイント**: FastifyとHonoの両方が同じServiceクラスを呼び出すため、ビジネスロジックは一箇所に集約されます。
 
 ### デバッグ設定
 
