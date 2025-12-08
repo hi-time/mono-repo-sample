@@ -4,11 +4,24 @@
  */
 
 import type { FastifyPluginAsync } from 'fastify'
+import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import multipart from '@fastify/multipart'
 import { jobRepository } from '@repo/shared'
 import { JobParameter } from '@repo/shared'
+import {
+  JobCreateResponseSchema,
+  JobCreateErrorSchema,
+  JobStatusParamsSchema,
+  JobStatusResponseSchema,
+  JobStatusErrorSchema,
+  JobResultParamsSchema,
+  JobResultResponseSchema,
+  JobResultErrorSchema,
+} from './schemas'
 
 export const jobRoutes: FastifyPluginAsync = async (server) => {
+  const typedServer = server.withTypeProvider<ZodTypeProvider>()
+
   // マルチパートプラグインを登録（ファイルサイズ制限を100MBに設定）
   await server.register(multipart, {
     limits: {
@@ -21,7 +34,18 @@ export const jobRoutes: FastifyPluginAsync = async (server) => {
    * POST /api/jobs
    * ジョブを投入してジョブIDを即座に返す
    */
-  server.post('/jobs', async (request, reply) => {
+  typedServer.post('/jobs', {
+    schema: {
+      description: '新しいジョブを投入',
+      tags: ['jobs'],
+      consumes: ['multipart/form-data'],
+      response: {
+        202: JobCreateResponseSchema,
+        400: JobCreateErrorSchema,
+        500: JobCreateErrorSchema,
+      },
+    },
+  }, async (request, reply) => {
     try {
       // @ts-ignore - multipart plugin adds file() method
       const data = await request.file()
@@ -59,7 +83,17 @@ export const jobRoutes: FastifyPluginAsync = async (server) => {
    * GET /api/jobs/:jobId/status
    * ジョブのステータスを確認
    */
-  server.get<{ Params: { jobId: string } }>('/jobs/:jobId/status', async (request, reply) => {
+  typedServer.get('/jobs/:jobId/status', {
+    schema: {
+      description: 'ジョブのステータスを確認',
+      tags: ['jobs'],
+      params: JobStatusParamsSchema,
+      response: {
+        200: JobStatusResponseSchema,
+        404: JobStatusErrorSchema,
+      },
+    },
+  }, async (request, reply) => {
     const { jobId } = request.params
 
     const status = await jobRepository.getJobStatus(jobId)
@@ -83,7 +117,19 @@ export const jobRoutes: FastifyPluginAsync = async (server) => {
    * GET /api/jobs/:jobId/result
    * ジョブの結果を取得
    */
-  server.get<{ Params: { jobId: string } }>('/jobs/:jobId/result', async (request, reply) => {
+  typedServer.get('/jobs/:jobId/result', {
+    schema: {
+      description: 'ジョブの結果を取得',
+      tags: ['jobs'],
+      params: JobResultParamsSchema,
+      response: {
+        200: JobResultResponseSchema,
+        400: JobResultErrorSchema,
+        404: JobResultErrorSchema,
+        500: JobResultErrorSchema,
+      },
+    },
+  }, async (request, reply) => {
     const { jobId } = request.params
 
     // まずステータスを確認
@@ -98,14 +144,12 @@ export const jobRoutes: FastifyPluginAsync = async (server) => {
     if (status.status === 'pending' || status.status === 'processing') {
       return reply.status(400).send({
         error: 'ジョブはまだ完了していません',
-        status: status.status,
       })
     }
 
     if (status.status === 'failed') {
       return reply.status(500).send({
         error: 'ジョブが失敗しました',
-        message: status.error,
       })
     }
 

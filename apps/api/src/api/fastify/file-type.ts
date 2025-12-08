@@ -4,11 +4,15 @@
  */
 
 import type { FastifyPluginAsync } from 'fastify'
+import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import multipart from '@fastify/multipart'
 import { FileTypeDetectionService } from '../../application/services/FileTypeDetectionService'
 import { DetectFileTypeParameter } from '../../domain/file-type'
+import { FileTypeResponseSchema, FileTypeErrorSchema } from './schemas'
 
 export const fileTypeRoutes: FastifyPluginAsync = async (server) => {
+  const typedServer = server.withTypeProvider<ZodTypeProvider>()
+
   // マルチパートプラグインを登録
   await server.register(multipart)
 
@@ -19,7 +23,18 @@ export const fileTypeRoutes: FastifyPluginAsync = async (server) => {
    * POST /api/detect-file-type
    * ファイルタイプを判定するエンドポイント
    */
-  server.post('/detect-file-type', async (request, reply) => {
+  typedServer.post('/detect-file-type', {
+    schema: {
+      description: 'アップロードされたファイルのタイプを検出',
+      tags: ['file-type'],
+      consumes: ['multipart/form-data'],
+      response: {
+        200: FileTypeResponseSchema,
+        400: FileTypeErrorSchema,
+        500: FileTypeErrorSchema,
+      },
+    },
+  }, async (request, reply) => {
     try {
       // @ts-ignore - multipart plugin adds file() method
       const data = await request.file()
