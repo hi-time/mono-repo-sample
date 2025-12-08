@@ -6,7 +6,7 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "backend", "dev"],
+      "runtimeArgs": ["--filter", "api", "dev"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -36,16 +36,16 @@
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/apps/frontend",
+      "webRoot": "${workspaceFolder}/web",
       "sourceMapPathOverrides": {
-        "webpack://_N_E/*": "${workspaceFolder}/apps/frontend/*"
+        "webpack://_N_E/*": "${workspaceFolder}/web/*"
       }
     },
     {
       "name": "Backend: Debug (tsx watch)",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/apps/backend",
+      "cwd": "${workspaceFolder}/apps/api",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["exec", "tsx", "watch", "--inspect", "src/index.ts"],
       "console": "integratedTerminal",

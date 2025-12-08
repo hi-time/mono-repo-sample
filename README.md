@@ -7,8 +7,8 @@ TypeScript + Turborepo を使用したモダンな monorepo プロジェクト�
 ```
 mono-repo-sample/
 ├── apps/
-│   ├── frontend/     # Nuxt 3 フロントエンドアプリケーション (SPA/SSR/SSG)
-│   ├── backend/      # Fastify + Hono APIサーバー + ライトDDD風アーキテクチャ
+│   ├── web/          # Nuxt 3 フロントエンドアプリケーション (SPA/SSR/SSG)
+│   ├── api/          # Fastify + Hono APIサーバー + ライトDDD風アーキテクチャ
 │   └── batch/        # バッチワーカー (非同期ジョブ処理)
 ├── packages/
 │   ├── types/        # 共有型定義
@@ -19,7 +19,7 @@ mono-repo-sample/
 
 ## 🚀 技術スタック
 
-### フロントエンド (apps/frontend)
+### フロントエンド (web)
 - **Nuxt 3** - モダンな Vue.js フレームワーク
   - SPA モード (client-side only)
   - SSR モード (server-side rendering)
@@ -27,7 +27,7 @@ mono-repo-sample/
 - **TypeScript** - 型安全性
 - **Vue Router** - ルーティング
 
-### バックエンド (apps/backend)
+### バックエンド (apps/api)
 - **Fastify** - 高性能な Node.js Web フレームワーク
 - **Hono + OpenAPI** - 軽量なAPI定義とドキュメント自動生成
 - **Magika 1.0.0** - Google のファイルタイプ検出ライブラリ
@@ -85,11 +85,11 @@ pnpm dev
 
 ```bash
 # フロントエンド (Nuxt) - http://localhost:3000
-cd apps/frontend
+cd web
 pnpm dev
 
 # 統合APIサーバー (Fastify + Hono) - http://localhost:3002
-cd apps/backend
+cd apps/api
 pnpm dev
 
 # バッチワーカー (非同期ジョブ処理)
@@ -98,7 +98,7 @@ pnpm dev
 ```
 
 > **重要**: 
-> - ファイルタイプ検出機能を使用する場合、**Redis/Dragonfly**、**Backend**、**Batch Worker** の3つが必要です
+> - ファイルタイプ検出機能を使用する場合、**Redis/Dragonfly**、**API**、**Batch Worker** の3つが必要です
 > - Redis/Dragonflyが起動していない場合、ジョブの保存・取得ができません
 > - デフォルトで `localhost:6379` に接続します（環境変数 `REDIS_HOST`, `REDIS_PORT` で変更可能）
 
@@ -106,7 +106,7 @@ pnpm dev
 
 - **Dragonfly (このプロジェクト専用)**: localhost:6380
   - ジョブデータの共有ストレージ（プロセス間通信）
-  - Backend と Batch Worker 間でジョブ情報を共有
+  - API と Batch Worker 間でジョブ情報を共有
   - 他のプロジェクトのRedis(6379)とは独立
 - **フロントエンド**: http://localhost:3000
   - ダッシュボード: http://localhost:3000/dashboard
@@ -213,7 +213,7 @@ pnpm dev
 ```mermaid
 sequenceDiagram
     participant F as Frontend
-    participant B as Backend<br/>(Fastify)
+    participant B as API<br/>(Fastify)
     participant S as Job Storage<br/>(Shared)
     participant W as Batch Worker<br/>(Magika)
 
@@ -287,7 +287,7 @@ graph TB
     end
     
     subgraph "使用箇所"
-        BACKEND["apps/backend<br/>(API)"] 
+        BACKEND["apps/api<br/>(API)"] 
         BATCH["apps/batch<br/>(Worker)"]
     end
     
@@ -306,13 +306,13 @@ graph TB
 - **疎結合**: API層とバッチ層が独立して動作
 - **エラーハンドリング**: ジョブの失敗を追跡・再試行可能
 
-## 🏗️ ライトDDD風 アーキテクチャ (Backend)
+## 🏗️ ライトDDD風 アーキテクチャ (API)
 
 バックエンドはシンプルなライトDDD風の構成で、Parameter/Resultクラスによる明確なデータフローを実現しています:
 
 ```mermaid
 graph LR
-    subgraph "apps/backend/src"
+    subgraph "apps/api/src"
         direction TB
         
         subgraph "API層"
@@ -371,7 +371,7 @@ graph LR
 #### レイヤー構造
 
 ```
-apps/backend/src/
+apps/api/src/
 ├── domain/              # ドメイン層 - ビジネスロジックの中核
 │   ├── entities/       # エンティティ（将来用）
 │   ├── value-objects/  # 値オブジェクト（将来用）
@@ -545,7 +545,7 @@ type JobStatusType = 'pending' | 'processing' | 'completed' | 'failed'
 
 #### ポーリング間隔
 
-- **フロントエンド → Backend**: 1秒間隔でステータスポーリング（最大60秒）
+- **フロントエンド → API**: 1秒間隔でステータスポーリング（最大60秒）
 - **Batch Worker → Job Storage**: 1秒間隔でペンディングジョブをチェック
 
 #### データの保持期間
@@ -557,7 +557,7 @@ type JobStatusType = 'pending' | 'processing' | 'completed' | 'failed'
 
 #### packages/shared の役割
 
-Backend と Batch Worker 間でドメインロジックを共有するための専用パッケージです。
+API と Batch Worker 間でドメインロジックを共有するための専用パッケージです。
 
 #### クラス設計
 
@@ -635,7 +635,7 @@ export const jobRepository = new InMemoryJobRepository()
 - ペンディングジョブの取得（バッチ用）
 - 古いジョブのクリーンアップ
 
-**重要**: シングルトンインスタンスとしてエクスポート（Backend と Batch で同一インスタンスを共有）
+**重要**: シングルトンインスタンスとしてエクスポート（API と Batch で同一インスタンスを共有）
 
 ---
 
@@ -737,7 +737,7 @@ import { jobRepository, JobResult } from '@repo/shared'
 import { jobRepository } from '@repo/shared/repository'
 ```
 
-### 4. Backend API 実装
+### 4. API サーバー実装
 
 #### POST /api/jobs (ジョブ投入)
 
@@ -895,7 +895,7 @@ startWorker().catch((error) => {
 - `output.is_text` (スネークケース) と `output.extensions` (配列) に注意
 - エラーハンドリングで `failJob()` を呼び出し
 
-### 6. Frontend 実装
+### 6. Web フロントエンド実装
 
 #### ジョブ投入 → ポーリング → 結果取得
 
@@ -976,7 +976,7 @@ const handleSubmit = async () => {
       "cache": false,
       "persistent": true
     },
-    "backend#dev": {
+    "api#dev": {
       "cache": false,
       "persistent": true
     },
@@ -984,7 +984,7 @@ const handleSubmit = async () => {
       "cache": false,
       "persistent": true
     },
-    "frontend#dev": {
+    "web#dev": {
       "cache": false,
       "persistent": true
     }
@@ -1059,15 +1059,15 @@ cd apps/batch
 
 `package.json`, `tsconfig.json`, `src/worker.ts` を上記の実装例に従って作成します。
 
-### ステップ4: Backend に Job API 追加
+### ステップ4: API に Job API 追加
 
 ```bash
-cd apps/backend
+cd apps/api
 ```
 
 `package.json` に `@repo/shared` を追加し、`src/api/fastify/jobs.ts` を作成、`src/index.ts` にルート登録します。
 
-### ステップ5: Frontend 更新
+### ステップ5: Web フロントエンド更新
 
 3つのページ（SPA/SSR/SSG）を上記の実装例に従って更新します。
 
@@ -1228,11 +1228,11 @@ pnpm build
 
 ```bash
 # フロントエンド
-cd apps/frontend
+cd web
 pnpm build
 
 # 統合APIサーバー
-cd apps/backend
+cd apps/api
 pnpm build
 ```
 
@@ -1293,14 +1293,14 @@ pnpm type-check
 pnpm add -w <package>
 
 # 特定のワークスペースに追加
-pnpm add <package> --filter frontend
-pnpm add <package> --filter backend
+pnpm add <package> --filter web
+pnpm add <package> --filter api
 ```
 
 ## 🤝 開発のヒント
 
 ### 新しいページの追加 (Nuxt)
-`apps/frontend/pages/` に `.vue` ファイルを作成するだけで自動的にルーティングが設定されます。
+`web/pages/` に `.vue` ファイルを作成するだけで自動的にルーティングが設定されます。
 
 ### レンダリングモードの指定
 - **SPA**: `definePageMeta({ ssr: false })` を追加
@@ -1310,16 +1310,16 @@ pnpm add <package> --filter backend
 ### 新しい API エンドポイントの追加
 
 #### ライトDDD風アーキテクチャ
-1. `apps/backend/src/domain/<feature>/` にParameter/Resultクラスを作成
-2. `apps/backend/src/application/services/` にServiceクラスを作成
+1. `apps/api/src/domain/<feature>/` にParameter/Resultクラスを作成
+2. `apps/api/src/application/services/` にServiceクラスを作成
 
 #### Fastify版エンドポイント
-3. `apps/backend/src/api/fastify/` に Fastify ルートを作成
-4. `apps/backend/src/index.ts` でルートを登録
+3. `apps/api/src/api/fastify/` に Fastify ルートを作成
+4. `apps/api/src/index.ts` でルートを登録
 
 #### Hono版エンドポイント（OpenAPI対応）
-3. `apps/backend/src/api/hono/` に Hono + OpenAPI ルートを作成
-4. `apps/backend/src/index.ts` でルートを登録
+3. `apps/api/src/api/hono/` に Hono + OpenAPI ルートを作成
+4. `apps/api/src/index.ts` でルートを登録
 
 **ポイント**: FastifyとHonoの両方が同じServiceクラスを呼び出すため、ビジネスロジックは一箇所に集約されます。
 
@@ -1331,7 +1331,7 @@ VS Codeでのデバッグ設定は `.vscode/launch.json` に記載されてい�
 
 1. **Backend: Debug**
    - バックエンドをデバッグモードで起動
-   - pnpm経由でbackendフィルターを使用して実行
+   - pnpm経由でapiフィルターを使用して実行
 
 2. **Backend: Attach**
    - 既に起動しているバックエンドプロセスにアタッチ

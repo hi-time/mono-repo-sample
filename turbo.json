@@ -16,7 +16,7 @@
     "type-check": {
       "dependsOn": ["^type-check"]
     },
-    "backend#dev": {
+    "api#dev": {
       "cache": false,
       "persistent": true
     },
@@ -24,7 +24,7 @@
       "cache": false,
       "persistent": true
     },
-    "frontend#dev": {
+    "web#dev": {
       "cache": false,
       "persistent": true
     }
