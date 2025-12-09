@@ -56,11 +56,7 @@
     <div v-if="error" class="error">
       {{ error }}
     </div>
-    
-    <div class="info-box">
-      <p><strong>注:</strong> このページは静的生成（SSG）されていますが、クライアントサイドでファイル判定を行います。</p>
-    </div>
-    
+        
     <NuxtLink to="/dashboard" class="back-link">
       ← ダッシュボードに戻る
     </NuxtLink>

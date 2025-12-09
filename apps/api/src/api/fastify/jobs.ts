@@ -107,8 +107,8 @@ export const jobRoutes: FastifyPluginAsync = async (server) => {
     return reply.send({
       jobId: status.jobId,
       status: status.status,
-      createdAt: status.createdAt,
-      updatedAt: status.updatedAt,
+      createdAt: status.createdAt.toISOString(),
+      updatedAt: status.updatedAt.toISOString(),
       error: status.error,
     })
   })
